@@ -1,0 +1,17 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    nokogiri (1.13.1-x86_64-darwin)
+      racc (~> 1.4)
+    ojxv (1.0.0)
+      nokogiri (~> 1.13.1)
+    racc (1.6.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ojxv
+
+BUNDLED WITH
+   2.3.6

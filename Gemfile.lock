@@ -1,9 +1,11 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    mini_portile2 (2.7.1)
     nokogiri (1.13.1)
+      mini_portile2 (~> 2.7.0)
       racc (~> 1.4)
-    ojxv (1.0.0)
+    ojxv (1.0.1)
       nokogiri (~> 1.13.1)
     racc (1.6.0)
 

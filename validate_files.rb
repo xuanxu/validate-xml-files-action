@@ -1,5 +1,12 @@
 require "ojxv"
 
+def print_errors(errors, schema, filepath)
+  system("echo '!! Invalid #{schema} in #{filepath}. Errors: #{errors.size}. '")
+  errors.each do |error|
+    system("echo '  - #{error}'")
+  end
+end
+
 validation_mode = ENV["VALIDATION_MODE"].to_s.strip
 jats_path = ENV["JATS_PATH"].to_s.strip
 crossref_path = ENV["CROSSREF_PATH"].to_s.strip
@@ -24,12 +31,5 @@ if !jats_path.empty? && File.exist?(jats_path)
     system("echo 'Validation successful! The file #{jats_path} contains valid JATS v1.3'")
   else
     print_errors(jats_file.errors, "JATS v1.3", jats_path)
-  end
-end
-
-def print_errors(errors, schema, filepath)
-  system("echo '!! Invalid #{schema} in #{filepath}. Errors: #{errors.size}. '")
-  errors.each do |error|
-    system("echo '  - #{error}'")
   end
 end

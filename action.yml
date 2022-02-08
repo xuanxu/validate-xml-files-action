@@ -7,6 +7,10 @@ inputs:
   crossref_path:
     description: The path to the Crossref XML file to be validated
     required: false
+  validation_mode:
+    description: "Validation mode: draft (will allow invalid DOI values) or strict"
+    required: false
+    default: draft
 runs:
   using: "composite"
   steps:
@@ -24,6 +28,7 @@ runs:
       env:
         JATS_PATH: ${{ inputs.jats_path }}
         CROSSREF_PATH: ${{ inputs.crossref_path }}
+        VALIDATION_MODE: ${{ inputs.validation_mode }}
         BUNDLE_GEMFILE: ${{ github.action_path }}/Gemfile
       run: |
         bundle exec ruby ${{ github.action_path }}/validate_files.rb

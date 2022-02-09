@@ -7,6 +7,11 @@ def print_errors(errors, schema, filepath)
   end
 end
 
+def only_allowed_errors?(error_list)
+  allowed_errors_for_drafts = ["doi: [facet minLength]", "doi: [facet pattern]"]
+  error_list.all? { |e| allowed_errors_for_drafts.any?{ |allowed| e.match?(allowed) }}
+end
+
 validation_mode = ENV["VALIDATION_MODE"].to_s.strip
 jats_path = ENV["JATS_PATH"].to_s.strip
 crossref_path = ENV["CROSSREF_PATH"].to_s.strip
@@ -18,6 +23,8 @@ if !crossref_path.empty? && File.exist?(crossref_path)
 
   if crossref_file.valid_crossref?("5.3.1")
     system("echo 'Validation successful! The file #{crossref_path} contains valid Crossref XML v5.3.1'")
+  elsif validation_mode == "draft" && only_allowed_errors?(crossref_file.errors)
+    system("echo 'Validation successful! The draft file #{crossref_path} contains no DOI but otherwise valid Crossref XML v5.3.1'")
   else
     print_errors(crossref_file.errors, "Crossref XML v5.3.1", crossref_path)
   end

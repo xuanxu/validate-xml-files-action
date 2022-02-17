@@ -5,6 +5,8 @@ def print_errors(errors, schema, filepath)
   errors.each do |error|
     system("echo '  - #{error}'")
   end
+  echo "CUSTOM_ERROR=Invalid XML metadata file" >> $GITHUB_ENV
+  raise
 end
 
 def only_allowed_errors?(error_list)

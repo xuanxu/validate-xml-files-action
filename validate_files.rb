@@ -6,7 +6,7 @@ def print_errors(errors, schema, filepath)
   errors.each do |error|
     system("echo '  - #{error}'")
   end
-  raise
+  raise "   !! ERROR: Invalid #{schema} file"
 end
 
 def only_allowed_errors?(error_list)

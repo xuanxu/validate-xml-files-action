@@ -1,11 +1,11 @@
 require "ojxv"
 
 def print_errors(errors, schema, filepath)
+  system("echo 'CUSTOM_ERROR=Invalid XML metadata file' >> $GITHUB_ENV")
   system("echo '!! Invalid #{schema} in #{filepath}. Errors: #{errors.size}. '")
   errors.each do |error|
     system("echo '  - #{error}'")
   end
-  echo "CUSTOM_ERROR=Invalid XML metadata file" >> $GITHUB_ENV
   raise
 end
 

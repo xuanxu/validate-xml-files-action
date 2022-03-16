@@ -1,11 +1,42 @@
 require "ojxv"
 
+
+## Parse errors and build legible markdown
+def detailed_message(errors)
+  msg = ""
+  error_msgs = []
+  errors.each do |error|
+    clean_error = error.to_s.gsub(/'\{[^\}]*\}([^']*)'/, "\\+")
+    detail = clean_error.match(/\A.*ERROR: (.*)\z/m)
+    error_msgs << detail[1] unless detail.nil?
+  end
+  error_msgs.compact!
+  unless error_msgs.empty?
+    msg = <<~ERRORS
+
+
+    ```yaml
+    #{error_msgs.join("\n")}
+    ```
+    ERRORS
+  end
+  msg
+end
+
+# print errors in the workflow console and post them back to the review issue
 def print_errors(errors, schema, filepath)
-  system("echo 'CUSTOM_ERROR=The generated XML metadata file is invalid.' >> $GITHUB_ENV")
   system("echo '!! Invalid #{schema} in #{filepath}. Errors: #{errors.size}. '")
   errors.each do |error|
     system("echo '  - #{error}'")
   end
+
+  error_msg = "The generated XML metadata file is invalid."
+  File.open('oj_custom_error.txt', 'w') do |f|
+    f.write [ENV['DEFAULT_ERROR'], error_msg, detailed_message(errors)].join(" ")
+  end
+  system("gh issue comment #{ENV['ISSUE_ID']} --body-file oj_custom_error.txt")
+  system("echo 'CUSTOM_ERROR_STATUS=sent' >> $GITHUB_ENV")
+
   raise "   !! ERROR: Invalid #{schema} file"
 end
 
@@ -14,10 +45,10 @@ def only_allowed_errors?(error_list)
   error_list.all? { |e| allowed_errors_for_drafts.any?{ |allowed| e.match?(allowed) }}
 end
 
+
 validation_mode = ENV["VALIDATION_MODE"].to_s.strip
 jats_path = ENV["JATS_PATH"].to_s.strip
 crossref_path = ENV["CROSSREF_PATH"].to_s.strip
-
 
 # Validate Crossref XML file if present
 if !crossref_path.empty? && File.exist?(crossref_path)

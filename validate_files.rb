@@ -23,7 +23,7 @@ def detailed_message(errors)
   msg
 end
 
-# print errors in the workflow console and post them back to the review issue
+# print errors in the workflow console and post them back to the review issue and raise a failure
 def print_errors(errors, schema, filepath)
   system("echo '!! Invalid #{schema} in #{filepath}. Errors: #{errors.size}. '")
   errors.each do |error|
@@ -38,6 +38,21 @@ def print_errors(errors, schema, filepath)
   system("echo 'CUSTOM_ERROR_STATUS=sent' >> $GITHUB_ENV")
 
   raise "   !! ERROR: Invalid #{schema} file"
+end
+
+# print errors in the workflow console, post them back to the review issue but dont fail
+def ignore_errors(errors, schema, filepath)
+  system("echo '!! Invalid #{schema} in #{filepath}. Errors: #{errors.size}. '")
+  system("echo '!! Mode: Ignoring errors. '")
+  errors.each do |error|
+    system("echo '  - #{error}'")
+  end
+
+  error_msg = "The generated #{schema} metadata file is invalid."
+  File.open('oj_custom_error.txt', 'w') do |f|
+    f.write [":warning: Ignoring errors that could prevent acceptance", error_msg, detailed_message(errors)].join(" ")
+  end
+  system("gh issue comment #{ENV['ISSUE_ID']} --body-file oj_custom_error.txt")
 end
 
 def only_allowed_errors?(error_list)
@@ -58,6 +73,8 @@ if !crossref_path.empty? && File.exist?(crossref_path)
     system("echo 'Validation successful! The file #{crossref_path} contains valid Crossref XML v5.3.1'")
   elsif validation_mode == "draft" && only_allowed_errors?(crossref_file.errors)
     system("echo 'Validation successful! The draft file #{crossref_path} contains no DOI but otherwise valid Crossref XML v5.3.1'")
+  elsif validation_mode == "ignore-errors"
+    ignore_errors(crossref_file.errors, "Crossref XML v5.3.1", crossref_path)
   else
     print_errors(crossref_file.errors, "Crossref XML v5.3.1", crossref_path)
   end
@@ -69,6 +86,8 @@ if !jats_path.empty? && File.exist?(jats_path)
 
   if jats_file.valid_jats?("1.3")
     system("echo 'Validation successful! The file #{jats_path} contains valid JATS v1.3'")
+  elsif validation_mode == "ignore-errors"
+    ignore_errors(jats_file.errors, "JATS v1.3", jats_path)
   else
     print_errors(jats_file.errors, "JATS v1.3", jats_path)
   end

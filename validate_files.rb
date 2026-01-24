@@ -86,9 +86,11 @@ if !jats_path.empty? && File.exist?(jats_path)
 
   if jats_file.valid_jats?("1.3")
     system("echo 'Validation successful! The file #{jats_path} contains valid JATS v1.3'")
+  elsif jats_file.valid_jats?("1.2")
+    system("echo 'Validation successful! The file #{jats_path} contains valid JATS v1.2 (Invalid JATS v1.3)'")
   elsif validation_mode == "ignore-errors"
-    ignore_errors(jats_file.errors, "JATS v1.3", jats_path)
+    ignore_errors(jats_file.errors, "JATS v1.2/v1.3", jats_path)
   else
-    print_errors(jats_file.errors, "JATS v1.3", jats_path)
+    print_errors(jats_file.errors, "JATS v1.2/v1.3", jats_path)
   end
 end
